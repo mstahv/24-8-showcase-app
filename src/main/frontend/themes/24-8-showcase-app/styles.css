@@ -1,1 +1,5 @@
 @import url('./views/master-detail-view.css');
+
+copilot-main {
+    display: none;
+}
