@@ -24,18 +24,24 @@ public class FileLoadHandlingView extends VerticalLayout {
 
         var upload = new Upload(
                 UploadHandler.toFile((metadata, file) -> {
-                            var download = new Anchor(DownloadHandler.forFile(file), "download " + file.getName());
-                            add(download);
+                            createAndAddDownloadLink(file);
                             SuccessNotification.show("File uploaded successfully");
                         },
                         this::createFile)
         );
 
+        upload.setMaxFileSize(10 * 1024 * 1024); //set 10MB
         upload.setAcceptedFileTypes("zip", "application/zip");
         upload.addFileRejectedListener(event ->
                 ErrorNotification.show("Filetype not accepted"));
 
         add(upload);
+    }
+
+    private void createAndAddDownloadLink(File file) {
+        var download = new Anchor(DownloadHandler.forFile(file), "download " + file.getName());
+        add(download);
+
     }
 
     private File createFile(UploadMetadata metadata) {
