@@ -8,7 +8,6 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.server.streams.UploadMetadata;
@@ -18,7 +17,6 @@ import java.io.File;
 
 @PageTitle("Simplified Up- & Download Handling")
 @Route("file-load-handling")
-@RouteAlias("")
 @Menu(order = 0, icon = LineAwesomeIconUrl.FILE)
 public class FileLoadHandlingView extends VerticalLayout {
 
@@ -26,11 +24,11 @@ public class FileLoadHandlingView extends VerticalLayout {
 
         var upload = new Upload(
                 UploadHandler.toFile((metadata, file) -> {
-                    var download = new Anchor(DownloadHandler.forFile(file), "download " + file.getName());
-                    add(download);
-                    SuccessNotification.show("File uploaded successfully");
-                },
-                this::createFile)
+                            var download = new Anchor(DownloadHandler.forFile(file), "download " + file.getName());
+                            add(download);
+                            SuccessNotification.show("File uploaded successfully");
+                        },
+                        this::createFile)
         );
 
         upload.setAcceptedFileTypes("zip", "application/zip");
@@ -41,7 +39,12 @@ public class FileLoadHandlingView extends VerticalLayout {
     }
 
     private File createFile(UploadMetadata metadata) {
-        return new File("uploads", metadata.fileName());
+        File uploadDir = new File("uploads");
+        if (!uploadDir.exists() && !uploadDir.mkdir()) {
+            throw new RuntimeException("Failed to create upload directory");
+        }
+
+        return new File(uploadDir, metadata.fileName());
     }
 
     public static class SuccessNotification extends Notification {
