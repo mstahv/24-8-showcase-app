@@ -29,9 +29,14 @@ public class MigratedLegacyFileLoadHandlingView extends VerticalLayout {
         var fileName = event.getFileName();
         var content = event.getInputStream().readAllBytes();
 
-        fileDataSet.add(new FileData(fileName, event.getContentType(), event.getFileSize(), content));
+        fileDataSet.add(new FileData(fileName, event.getContentType(), content));
 
-        event.getUI().access(() -> fileDataGridListDataView.refreshAll());
+        //Practical Example: pass data-stream
+
+        event.getUI().access(() -> {
+            fileDataGridListDataView.refreshAll();
+            processWithExternalLibrary(content);
+        });
     };
 
     public MigratedLegacyFileLoadHandlingView() {
@@ -46,6 +51,10 @@ public class MigratedLegacyFileLoadHandlingView extends VerticalLayout {
     private Upload createUpload() {
         var upload = new Upload(uploadHandler);
 
+        upload.setMaxFileSize(10 * 1024 * 1024); //max 10MB
+        upload.setAcceptedFileTypes("pdf", "application/pdf",
+                "image/png", "image/jpg", "image/jpeg", "image/pdf");
+
 //        upload.addSucceededListener(event -> {
 //            var content = buffer.getOutputBuffer(event.getFileName()).toByteArray();
 //            fileDataSet.add(new FileData(event.getFileName(), content));
@@ -56,10 +65,22 @@ public class MigratedLegacyFileLoadHandlingView extends VerticalLayout {
         return upload;
     }
 
+    private void processWithExternalLibrary(byte[] content) {
+//        try (ByteArrayInputStream stream = new ByteArrayInputStream(content)) {
+//            externalService.processStream(stream);
+//            Notification.show("✓ File processed successfully.", 3000, Notification.Position.TOP_CENTER)
+//                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+//        } catch (Exception ex) {
+//            Notification.show("✗ An error occurred!", 5000, Notification.Position.TOP_CENTER)
+//                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+//            ex.printStackTrace();
+//        }
+    }
+
     private Grid<FileData> createFileDataGrid() {
         var grid = new Grid<>(FileData.class);
 
-        grid.setColumns("fileName", "conentType", "contentLength");
+        grid.setColumns("fileName", "contentType");
         grid.addComponentColumn(this::createDownloadLink)
                 .setHeader("Content");
         fileDataGridListDataView = grid.setItems(fileDataSet);
@@ -76,11 +97,8 @@ public class MigratedLegacyFileLoadHandlingView extends VerticalLayout {
     private Anchor createDownloadLink(FileData fileData) {
 
         var downloadHelper = DownloadHandler.fromInputStream(event -> new DownloadResponse(
-                new ByteArrayInputStream(fileData.content), fileData.fileName, fileData.conentType, fileData.contentLength));
+                new ByteArrayInputStream(fileData.content()), fileData.fileName(), fileData.contentType(), -1));
 
-        return new Anchor(downloadHelper, fileData.fileName);
+        return new Anchor(downloadHelper, fileData.fileName());
     }
-
-    public record FileData(String fileName, String conentType, long contentLength, byte[] content) {}
 }
-

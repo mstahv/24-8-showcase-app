@@ -40,7 +40,11 @@ public class LegacyFileLoadHandlingView extends VerticalLayout {
 
         upload.addSucceededListener(event -> {
             var content = buffer.getOutputBuffer(event.getFileName()).toByteArray();
-            fileDataSet.add(new FileData(event.getFileName(), content));
+            fileDataSet.add(new FileData(event.getFileName(), event.getMIMEType(), content));
+
+            //Practical Example: pass data-stream
+            processWithExternalLibrary(content);
+
             grid.getDataProvider().refreshAll();
         });
         upload.addAllFinishedListener(event -> upload.clearFileList());
@@ -48,9 +52,21 @@ public class LegacyFileLoadHandlingView extends VerticalLayout {
         return upload;
     }
 
+    private void processWithExternalLibrary(byte[] content) {
+//        try (ByteArrayInputStream stream = new ByteArrayInputStream(content)) {
+//            externalService.processStream(stream);
+//            Notification.show("✓ File processed successfully.", 3000, Notification.Position.TOP_CENTER)
+//                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+//        } catch (Exception ex) {
+//            Notification.show("✗ An error occurred!", 5000, Notification.Position.TOP_CENTER)
+//                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+//            ex.printStackTrace();
+//        }
+    }
+
     private Grid<FileData> createFileDataGrid() {
         var grid = new Grid<>(FileData.class);
-        grid.setColumns("fileName");
+        grid.setColumns("fileName", "contentType");
         grid.addComponentColumn(this::createDownloadLink)
                 .setHeader("Content");
         grid.setItems(fileDataSet);
@@ -58,12 +74,10 @@ public class LegacyFileLoadHandlingView extends VerticalLayout {
     }
 
     private Component createDownloadLink(FileData fileData) {
-        var resource = new StreamResource(fileData.fileName, () -> new ByteArrayInputStream(fileData.content));
-        var downloadLink = new Anchor(resource, fileData.fileName);
+        var resource = new StreamResource(fileData.fileName(), () -> new ByteArrayInputStream(fileData.content()));
+        var downloadLink = new Anchor(resource, fileData.fileName());
         downloadLink.getElement().setAttribute("download", true);
         return downloadLink;
     }
-
-    public record FileData(String fileName, byte[] content) {}
 }
 
