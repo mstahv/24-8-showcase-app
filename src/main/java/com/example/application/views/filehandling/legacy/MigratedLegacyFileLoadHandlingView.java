@@ -95,10 +95,10 @@ public class MigratedLegacyFileLoadHandlingView extends VerticalLayout {
 //    }
 
     private Anchor createDownloadLink(FileData fileData) {
-
-        var downloadHelper = DownloadHandler.fromInputStream(event -> new DownloadResponse(
-                new ByteArrayInputStream(fileData.content()), fileData.fileName(), fileData.contentType(), -1));
-
-        return new Anchor(downloadHelper, fileData.fileName());
+        return new Anchor(download -> {
+            download.setFileName(fileData.fileName());
+            download.setContentType(fileData.contentType());
+            download.getOutputStream().write(fileData.content());
+        }, fileData.fileName());
     }
 }
