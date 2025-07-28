@@ -14,6 +14,7 @@ import com.vaadin.flow.server.streams.UploadHandler;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,10 +33,12 @@ public class MigratedLegacyFileLoadHandlingView extends VerticalLayout {
         fileDataSet.add(new FileData(fileName, event.getContentType(), content));
 
         //Practical Example: pass data-stream
+        processWithExternalLibrary(event.getInputStream());
 
         event.getUI().access(() -> {
             fileDataGridListDataView.refreshAll();
-            processWithExternalLibrary(content);
+//            Notification.show("✓ File processed successfully.", 3000, Notification.Position.TOP_CENTER)
+//                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         });
     };
 
@@ -65,16 +68,8 @@ public class MigratedLegacyFileLoadHandlingView extends VerticalLayout {
         return upload;
     }
 
-    private void processWithExternalLibrary(byte[] content) {
-//        try (ByteArrayInputStream stream = new ByteArrayInputStream(content)) {
+    private void processWithExternalLibrary(InputStream content) {
 //            externalService.processStream(stream);
-//            Notification.show("✓ File processed successfully.", 3000, Notification.Position.TOP_CENTER)
-//                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-//        } catch (Exception ex) {
-//            Notification.show("✗ An error occurred!", 5000, Notification.Position.TOP_CENTER)
-//                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
-//            ex.printStackTrace();
-//        }
     }
 
     private Grid<FileData> createFileDataGrid() {

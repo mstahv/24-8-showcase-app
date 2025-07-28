@@ -13,6 +13,7 @@ import com.vaadin.flow.server.StreamResource;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,7 +44,9 @@ public class LegacyFileLoadHandlingView extends VerticalLayout {
             fileDataSet.add(new FileData(event.getFileName(), event.getMIMEType(), content));
 
             //Practical Example: pass data-stream
-            processWithExternalLibrary(content);
+            // Note, getInputStream methods in earlier Vaadin versions is just a convenience method
+            // to wrap the buffer with ByteArrayInputStream (not very efficient, temporarily wastes a lot of memory and makes it easy to create memory leaks)
+            processWithExternalLibrary(buffer.getInputStream(event.getFileName()));
 
             grid.getDataProvider().refreshAll();
         });
@@ -52,16 +55,10 @@ public class LegacyFileLoadHandlingView extends VerticalLayout {
         return upload;
     }
 
-    private void processWithExternalLibrary(byte[] content) {
-//        try (ByteArrayInputStream stream = new ByteArrayInputStream(content)) {
+    private void processWithExternalLibrary(InputStream stream) {
 //            externalService.processStream(stream);
 //            Notification.show("✓ File processed successfully.", 3000, Notification.Position.TOP_CENTER)
 //                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-//        } catch (Exception ex) {
-//            Notification.show("✗ An error occurred!", 5000, Notification.Position.TOP_CENTER)
-//                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
-//            ex.printStackTrace();
-//        }
     }
 
     private Grid<FileData> createFileDataGrid() {
@@ -74,6 +71,8 @@ public class LegacyFileLoadHandlingView extends VerticalLayout {
     }
 
     private Component createDownloadLink(FileData fileData) {
+        // Old Vaadin versions guided towards using StreamResource for file downloads
+        // that often caused people to reserve memory for the whole file content up front, like here
         var resource = new StreamResource(fileData.fileName(), () -> new ByteArrayInputStream(fileData.content()));
         var downloadLink = new Anchor(resource, fileData.fileName());
         downloadLink.getElement().setAttribute("download", true);

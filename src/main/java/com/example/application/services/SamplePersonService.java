@@ -33,6 +33,11 @@ public class SamplePersonService {
         return repository.findAll(pageable);
     }
 
+    public byte[] lazyLoadPhoto(SamplePerson samplePerson) {
+        SamplePerson samplePerson1 = repository.findById(samplePerson.getId()).get();
+        return samplePerson1.getPhoto(); // triggers lazy load
+    }
+
     public Page<SamplePerson> list(Pageable pageable, Specification<SamplePerson> filter) {
         return repository.findAll(filter, pageable);
     }

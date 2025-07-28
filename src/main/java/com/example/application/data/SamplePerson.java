@@ -1,6 +1,9 @@
 package com.example.application.data;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Lob;
 import jakarta.validation.constraints.Email;
 import java.time.LocalDate;
 
@@ -16,6 +19,12 @@ public class SamplePerson extends AbstractEntity {
     private String occupation;
     private String role;
     private boolean important;
+
+    // As saving byte[] can be memory heavy, better have them lazy and have a flag indicating if photo is there or not
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    private byte[] photo;
+    private boolean photoAdded = false;
 
     public String getFirstName() {
         return firstName;
@@ -66,4 +75,22 @@ public class SamplePerson extends AbstractEntity {
         this.important = important;
     }
 
+    /**
+     * @return the photo as a byte array (JPG)
+     */
+    public byte[] getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(byte[] photo) {
+        this.photo = photo;
+    }
+
+    public boolean isPhotoAdded() {
+        return photoAdded;
+    }
+
+    public void setPhotoAdded(boolean photoAdded) {
+        this.photoAdded = photoAdded;
+    }
 }
