@@ -58,7 +58,6 @@ public class PersonPhotosUpdated extends Grid<SamplePerson> {
                     // With new API we can directly access the file contents pushed by the browser
                     // The whole original image is never stored in obsolete byte[] buffers
                     // NOTE the known issue with Spring Boot, it gets buffered on a file though, before passed here...
-                    BufferedImage bi = ImageIO.read(uploadEvent.getInputStream());
                     ByteArrayOutputStream scaled = new ByteArrayOutputStream();
                     Thumbnailator.createThumbnail(uploadEvent.getInputStream(), scaled, 100, 100);
                     person.setPhoto(scaled.toByteArray());
